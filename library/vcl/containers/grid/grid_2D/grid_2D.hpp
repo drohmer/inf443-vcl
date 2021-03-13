@@ -508,7 +508,7 @@ template <typename T> grid_2D<T>  operator+(T const& a, grid_2D<T> const& b)
 template <typename T> grid_2D<T>& operator-=(grid_2D<T>& a, grid_2D<T> const& b)
 {
     assert_vcl( is_equal(a.dimension,b.dimension), "Dimension do not agree: a:"+str(a.dimension)+", b:"+str(b.dimension) );
-    a.data += b.data;
+    a.data -= b.data;
 }
 template <typename T> grid_2D<T>& operator-=(grid_2D<T>& a, T const& b)
 {

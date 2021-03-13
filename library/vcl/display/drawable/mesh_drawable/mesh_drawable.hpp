@@ -33,9 +33,9 @@ namespace vcl
 		void clear();
 		mesh_drawable& update_position(buffer<vec3> const& new_position);
 		mesh_drawable& update_normal(buffer<vec3> const& new_normal);
+		mesh_drawable& update_color(buffer<vec3> const& new_color);
+		mesh_drawable& update_uv(buffer<vec2> const& new_uv);
 	};
-
-	//void send_data_to_gpu(mesh_drawable& to_fill, mesh const& data_to_send, GLuint draw_type=GL_DYNAMIC_DRAW);
 
 	template <typename SCENE>
 	void draw(mesh_drawable const& drawable, SCENE const& scene);

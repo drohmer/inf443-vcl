@@ -53,6 +53,18 @@ namespace vcl
 		glBufferSubData(GL_ARRAY_BUFFER,0,size_in_memory(new_normals),ptr(new_normals));  opengl_check;
 		return *this;
 	}
+	mesh_drawable& mesh_drawable::update_color(buffer<vec3> const& new_color)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER,vbo["color"]); opengl_check;
+		glBufferSubData(GL_ARRAY_BUFFER,0,size_in_memory(new_color),ptr(new_color));  opengl_check;
+		return *this;
+	}
+	mesh_drawable& mesh_drawable::update_uv(buffer<vec2> const& new_uv)
+	{
+		glBindBuffer(GL_ARRAY_BUFFER,vbo["uv"]); opengl_check;
+		glBufferSubData(GL_ARRAY_BUFFER,0,size_in_memory(new_uv),ptr(new_uv));  opengl_check;
+		return *this;
+	}
 
 	void mesh_drawable::clear()
 	{

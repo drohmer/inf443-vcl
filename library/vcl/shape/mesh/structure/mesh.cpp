@@ -106,34 +106,35 @@ namespace vcl
 
 	bool mesh_check(mesh const& m)
 	{
+		bool ok = true;
 		std::string const warning = "Warning [mesh_check]: ";
 
 		size_t const N = m.position.size();
 		if (N == 0)
-			std::cout<<warning+"Current mesh has 0 position"<<std::endl;
+		{std::cout<<warning+"Current mesh has 0 position"<<std::endl; ok =false;}
 		if (N>10000000)
-			std::cout<<warning+"Current mesh has more than 10 millions positions"<<std::endl;
+		{std::cout<<warning+"Current mesh has more than 10 millions positions"<<std::endl; ok=false;}
 
 		if (m.normal.size()==0)
-			std::cout<<warning+"Mesh doesn't have any per-vertex normal defined"<<std::endl;
+		{std::cout<<warning+"Mesh doesn't have any per-vertex normal defined"<<std::endl; ok=false;}
 		if (m.normal.size()!=N)
-			std::cout<<warning+"Mesh has incoherent size of per-vertex normal"<<std::endl;
+		{std::cout<<warning+"Mesh has incoherent size of per-vertex normal"<<std::endl; ok=false;}
 
 		if(m.uv.size()==0)
-			std::cout<<warning+"Mesh doesn't have any per-vertex uv defined"<<std::endl;
+		{std::cout<<warning+"Mesh doesn't have any per-vertex uv defined"<<std::endl; ok=false;}
 		if(m.uv.size()!=N)
-			std::cout<<warning+"Mesh has incoherent size of per-vertex uv"<<std::endl;
+		{std::cout<<warning+"Mesh has incoherent size of per-vertex uv"<<std::endl; ok=false;}
 		
 		if(m.color.size()==0)
-			std::cout<<warning+"Mesh doesn't have any per-vertex color defined"<<std::endl;
+		{std::cout<<warning+"Mesh doesn't have any per-vertex color defined"<<std::endl; ok=false;}
 		if(m.color.size()!=N)
-			std::cout<<warning+"Mesh has incoherent size of per-vertex color"<<std::endl;
+		{std::cout<<warning+"Mesh has incoherent size of per-vertex color"<<std::endl; ok=false;}
 
 		size_t const N_triangle = m.connectivity.size();
 		if (N_triangle == 0)
-			std::cout<<warning+"Current mesh has no connectivity"<<std::endl;
+		{std::cout<<warning+"Current mesh has no connectivity"<<std::endl; ok=false;}
 		if (N_triangle>10000000)
-			std::cout<<warning+"Current mesh has more than 10 millions triangles"<<std::endl;
+		{std::cout<<warning+"Current mesh has more than 10 millions triangles"<<std::endl; ok=false;}
 
 		// Check triangles
 		for (size_t kt = 0; kt < N_triangle; ++kt) {
@@ -180,7 +181,13 @@ namespace vcl
 			}
 		}
 
-		return true;
+		if (ok == false)
+		{
+			std::cout<<"\nYou mesh seem to have issues - you should correct it before being able to display it\n"<<std::endl;
+			std::cout<<"> If some buffers are empty, make sure you call mesh.fill_empty_field(); to your mesh structure"<<std::endl;
+		}
+
+		return ok;
 	}
 
 	std::string str(mesh const& m)

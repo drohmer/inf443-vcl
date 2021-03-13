@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 3.2)
 
 # List the files of the current local project 
 #    Default behavior: Automatically add all hpp and cpp files from src/ directory
