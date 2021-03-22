@@ -111,7 +111,7 @@ void initialize_data()
 	// Create a quadrangle as a mesh
 	mesh quadrangle;
 	quadrangle.position     = {{-1,-1,0}, { 1,-1,0}, { 1, 1,0}, {-1, 1,0}};
-	quadrangle.uv           = {{0,0.5f}, {0.5f,0.5f}, {0.5f,0}, {0,0}}; // Associate Texture-Coordinates to the vertices of the quadrangle
+	quadrangle.uv           = {{0,1}, {1,1}, {1,0}, {0,0}}; // Associate Texture-Coordinates to the vertices of the quadrangle
 	quadrangle.connectivity = {{0,1,2}, {0,2,3}};
 
 	quadrangle.fill_empty_field(); // (fill with some default values the other buffers (colors, normals) that we didn't filled before)
