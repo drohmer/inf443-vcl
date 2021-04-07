@@ -1,7 +1,7 @@
 #include "vcl/vcl.hpp"
 #include <iostream>
+#include <list>
 
-#include "models_textures.hpp"
 
 using namespace vcl;
 
@@ -27,13 +27,25 @@ struct scene_environment
 scene_environment scene;
 
 
+// Structure of a particle
+struct particle_structure
+{
+    vcl::vec3 p; // Position
+    vcl::vec3 v; // Speed
+};
+
 void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
 void window_size_callback(GLFWwindow* window, int width, int height);
 
 void initialize_data();
 void display_interface();
+void display_frame();
 
-mesh_drawable visual;
+
+std::list<particle_structure> particles; // Storage of all currently active particles
+mesh_drawable sphere;
+mesh_drawable disc;
+timer_event_periodic timer(0.6f);
 
 int main(int, char* argv[])
 {
@@ -50,7 +62,6 @@ int main(int, char* argv[])
 	
 	std::cout<<"Initialize data ..."<<std::endl;
 	initialize_data();
-
 
 	std::cout<<"Start animation loop ..."<<std::endl;
 	user.fps_record.start();
@@ -70,14 +81,13 @@ int main(int, char* argv[])
 		}
 
 		ImGui::Begin("GUI",NULL,ImGuiWindowFlags_AlwaysAutoResize);
-		user.cursor_on_gui = ImGui::IsAnyWindowFocused();
+		user.cursor_on_gui = ImGui::GetIO().WantCaptureMouse;
 
 		if(user.gui.display_frame) draw(user.global_frame, scene);
 
 		display_interface();
-		
-		draw(visual, scene);
-		draw_wireframe(visual, scene, {1,0,0});
+		display_frame();
+
 
 		ImGui::End();
 		imgui_render_frame(window);
@@ -92,8 +102,6 @@ int main(int, char* argv[])
 	return 0;
 }
 
-
-
 void initialize_data()
 {
 	// Basic setups of shaders and camera
@@ -102,37 +110,71 @@ void initialize_data()
 	mesh_drawable::default_texture = opengl_texture_to_gpu(image_raw{1,1,image_color_type::rgba,{255,255,255,255}});
 
 	user.global_frame = mesh_drawable(mesh_primitive_frame());
-	user.gui.display_frame = false;
-	scene.camera.distance_to_center = 2.5f;
-	scene.camera.look_at({-4,3,2}, {0,0,0}, {0,0,1});
+	scene.camera.distance_to_center = 10.0f;
+	scene.camera.look_at({3,1,2}, {0,0,0.5}, {0,0,1});
 
-	// Geometry creation
-	//-----------------------------------
-	// Create a quadrangle as a mesh
-	mesh quadrangle;
-	quadrangle.position     = {{-1,-1,0}, { 1,-1,0}, { 1, 1,0}, {-1, 1,0}};
-	quadrangle.uv           = {{0,1}, {1,1}, {1,0}, {0,0}}; // Associate Texture-Coordinates to the vertices of the quadrangle
-	quadrangle.connectivity = {{0,1,2}, {0,2,3}};
 
-	quadrangle.fill_empty_field(); // (fill with some default values the other buffers (colors, normals) that we didn't filled before)
-
+	float const r = 0.05f; // radius of the sphere
+	sphere = mesh_drawable( mesh_primitive_sphere(r) );
+	sphere.shading.color = {0.5f,0.5f,1.0f};
+	disc = mesh_drawable( mesh_primitive_disc(2.0f) );
+	disc.transform.translate = {0,0,-r};
 	
-	// Convert the mesh structure into a mesh_drawable structure
-	visual = mesh_drawable(quadrangle);
 
-	// Texture Image load and association
-	//-----------------------------------	
-	// Load an image from a file
-	image_raw const im = image_load_png("assets/squirrel.png");
-
-	// Send this image to the GPU, and get its identifier texture_image_id
-	GLuint const texture_image_id = opengl_texture_to_gpu(im, 
-		GL_CLAMP_TO_EDGE, 
-		GL_CLAMP_TO_EDGE);
-
-	// Associate the texture_image_id to the image texture used when displaying visual
-	visual.texture = texture_image_id;
 }
+
+
+void display_frame()
+{
+
+	draw(disc, scene);
+	float const dt = timer.update();
+
+	bool const new_particle = timer.event;
+	if (new_particle == true) {
+		vec3 const p0 = {0,0,0};
+
+		// Initial random velocity (x,y) components are uniformly distributed along a circle.
+        const float theta = rand_interval(0,2*pi);
+        const vec3 v0 = vec3( std::cos(theta), std::sin(theta), 5.0f);
+
+		particles.push_back({p0,v0});
+	}
+
+	// Evolve position of particles
+    const vec3 g = {0.0f,0.0f,-9.81f};
+    for(particle_structure& particle : particles)
+    {
+        const float m = 0.01f; // particle mass
+
+        vec3& p = particle.p;
+        vec3& v = particle.v;
+
+        const vec3 F = m*g;
+
+        // Numerical integration
+        v = v + dt*F/m;
+        p = p + dt*v;
+    }
+
+
+	// Remove particles that are too low
+    for(auto it = particles.begin(); it!=particles.end(); ){
+        if( it->p.z < -3)
+            it = particles.erase(it);
+		if(it!=particles.end())
+			++it;
+	}
+
+	// Display particles
+    for(particle_structure& particle : particles)
+    {
+        sphere.transform.translate = particle.p;
+        draw(sphere, scene);
+    }
+
+}
+
 
 
 
@@ -140,6 +182,7 @@ void initialize_data()
 void display_interface()
 {
 	ImGui::Checkbox("Frame", &user.gui.display_frame);
+	ImGui::SliderFloat("Scale", &timer.scale, 0.0f, 3.0f, "%.3f", 2.0f);
 }
 
 
@@ -156,6 +199,8 @@ void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 	vec2 const  p1 = glfw_get_mouse_cursor(window, xpos, ypos);
 	vec2 const& p0 = user.mouse_prev;
 	glfw_state state = glfw_current_state(window);
+
+
 
 	auto& camera = scene.camera;
 	if(!user.cursor_on_gui){

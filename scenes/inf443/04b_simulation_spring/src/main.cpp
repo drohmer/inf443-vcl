@@ -1,7 +1,7 @@
 #include "vcl/vcl.hpp"
 #include <iostream>
+#include <list>
 
-#include "models_textures.hpp"
 
 using namespace vcl;
 
@@ -27,13 +27,37 @@ struct scene_environment
 scene_environment scene;
 
 
+
 void mouse_move_callback(GLFWwindow* window, double xpos, double ypos);
 void window_size_callback(GLFWwindow* window, int width, int height);
+void display_segment(vec3 const& a, vec3 const& b);
 
 void initialize_data();
 void display_interface();
+void display_frame();
 
-mesh_drawable visual;
+
+
+mesh_drawable sphere;
+mesh_drawable disc;
+timer_event_periodic timer(0.6f);
+
+segments_drawable segments;
+
+vec3 pA, vA;
+vec3 pB, vB;
+float L0;
+float L0_array;
+
+
+/** Compute spring force applied on particle pi from particle pj */
+vec3 spring_force(vec3 const& p_i, vec3 const& p_j, float L_0, float K)
+{
+	// TO DO: correct the computation of this force value
+    return {0,0,0};
+}
+
+
 
 int main(int, char* argv[])
 {
@@ -50,7 +74,6 @@ int main(int, char* argv[])
 	
 	std::cout<<"Initialize data ..."<<std::endl;
 	initialize_data();
-
 
 	std::cout<<"Start animation loop ..."<<std::endl;
 	user.fps_record.start();
@@ -70,14 +93,13 @@ int main(int, char* argv[])
 		}
 
 		ImGui::Begin("GUI",NULL,ImGuiWindowFlags_AlwaysAutoResize);
-		user.cursor_on_gui = ImGui::IsAnyWindowFocused();
+		user.cursor_on_gui = ImGui::GetIO().WantCaptureMouse;
 
 		if(user.gui.display_frame) draw(user.global_frame, scene);
 
 		display_interface();
-		
-		draw(visual, scene);
-		draw_wireframe(visual, scene, {1,0,0});
+		display_frame();
+
 
 		ImGui::End();
 		imgui_render_frame(window);
@@ -92,54 +114,90 @@ int main(int, char* argv[])
 	return 0;
 }
 
-
-
 void initialize_data()
 {
 	// Basic setups of shaders and camera
 	GLuint const shader_mesh = opengl_create_shader_program(opengl_shader_preset("mesh_vertex"), opengl_shader_preset("mesh_fragment"));
+	GLuint const shader_single_color = opengl_create_shader_program(opengl_shader_preset("single_color_vertex"), opengl_shader_preset("single_color_fragment"));
 	mesh_drawable::default_shader = shader_mesh;
 	mesh_drawable::default_texture = opengl_texture_to_gpu(image_raw{1,1,image_color_type::rgba,{255,255,255,255}});
+	segments_drawable::default_shader = shader_single_color;
+	segments = segments_drawable( {{0,0,0},{1,0,0}} );
 
 	user.global_frame = mesh_drawable(mesh_primitive_frame());
-	user.gui.display_frame = false;
-	scene.camera.distance_to_center = 2.5f;
-	scene.camera.look_at({-4,3,2}, {0,0,0}, {0,0,1});
+	scene.camera.distance_to_center = 10.0f;
+	scene.camera.look_at({3,1,2}, {0,0,0.5}, {0,0,1});
 
-	// Geometry creation
-	//-----------------------------------
-	// Create a quadrangle as a mesh
-	mesh quadrangle;
-	quadrangle.position     = {{-1,-1,0}, { 1,-1,0}, { 1, 1,0}, {-1, 1,0}};
-	quadrangle.uv           = {{0,1}, {1,1}, {1,0}, {0,0}}; // Associate Texture-Coordinates to the vertices of the quadrangle
-	quadrangle.connectivity = {{0,1,2}, {0,2,3}};
+	sphere = mesh_drawable( mesh_primitive_sphere(0.05f));
 
-	quadrangle.fill_empty_field(); // (fill with some default values the other buffers (colors, normals) that we didn't filled before)
+    // Initial position and speed of particles
+    // ******************************************* //
+    pA = {0,0,0};     // Initial position of particle A
+    vB = {0,0,0};     // Initial speed of particle A
 
+    pB = {0.0f,0.45f,0.0f};  // Initial position of particle B
+    vB = {0,0,0};     // Initial speed of particle B
+
+    L0 = 0.4f; // Rest length between A and B
 	
-	// Convert the mesh structure into a mesh_drawable structure
-	visual = mesh_drawable(quadrangle);
 
-	// Texture Image load and association
-	//-----------------------------------	
-	// Load an image from a file
-	image_raw const im = image_load_png("assets/squirrel.png");
-
-	// Send this image to the GPU, and get its identifier texture_image_id
-	GLuint const texture_image_id = opengl_texture_to_gpu(im, 
-		GL_CLAMP_TO_EDGE, 
-		GL_CLAMP_TO_EDGE);
-
-	// Associate the texture_image_id to the image texture used when displaying visual
-	visual.texture = texture_image_id;
 }
 
 
+void display_frame()
+{
+
+	 // Simulation time step (dt)
+    float const dt = timer.scale*0.01f;
+
+    // Simulation parameters
+    float const m  = 0.01f;        // particle mass
+    float const K  = 5.0f;        // spring stiffness
+    float const mu = 0.01f;       // damping coefficient
+
+    vec3 const g   = {0,0,-9.81f}; // gravity
+
+    // Forces
+    vec3 const fB_spring  = spring_force(pB, pA, L0, K);
+    vec3 const fB_weight  =  m * g;
+	vec3 const fB_damping =  -mu*vB;
+    vec3 const fB = fB_spring + fB_weight + fB_damping;
+
+	// Numerical Integration (Verlet)
+    {
+        // Only particle B should be updated
+        vB = (1-mu)*vB + dt * fB / m;
+		pB = pB + dt * vB;
+    }
+
+	// Display of the result
+
+    // particle pa
+    sphere.transform.translate = pA;
+    sphere.shading.color = {0,0,0};
+    draw(sphere, scene);
+
+    // particle pb
+    sphere.transform.translate = pB;
+    sphere.shading.color = {1,0,0};
+    draw(sphere, scene);
+
+	display_segment(pA, pB);
+
+}
+
+
+void display_segment(vec3 const& a, vec3 const& b)
+{
+	segments.update({a,b});
+	draw(segments, scene);
+}
 
 
 void display_interface()
 {
 	ImGui::Checkbox("Frame", &user.gui.display_frame);
+	ImGui::SliderFloat("Scale", &timer.scale, 0.0f, 3.0f, "%.3f", 2.0f);
 }
 
 
@@ -156,6 +214,8 @@ void mouse_move_callback(GLFWwindow* window, double xpos, double ypos)
 	vec2 const  p1 = glfw_get_mouse_cursor(window, xpos, ypos);
 	vec2 const& p0 = user.mouse_prev;
 	glfw_state state = glfw_current_state(window);
+
+
 
 	auto& camera = scene.camera;
 	if(!user.cursor_on_gui){
