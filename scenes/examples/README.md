@@ -19,11 +19,11 @@ The following codes shows various examples of effects in the VCL library context
 * [Use of multiple shaders](03_shader_effects/02_multiple_shaders/)
 * [Transparency in textures](03_shader_effects/03_transparent_billboards/)
 * [Multi-texturing](03_shader_effects/04_multiple_textures/)
-* [Multiple lights and fog](03_shader_effects/05_multiple_light/)
+* [Multiple lights and fog](03_shader_effects/05_multiple_lights/)
 * [Multipass and framebuffer](03_shader_effects/06_framebuffer_multipass/)
 
 
 ## Classical effects
 
-* [Environmental map](04_classical_effects/01_enrionment_map/)
+* [Environmental map](04_classical_effects/01_environment_map/)
 * [Shadow map](04_classical_effects/02_shadow/)
