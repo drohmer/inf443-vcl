@@ -28,11 +28,11 @@ void draw(mesh_drawable_multitexture const& drawable, SCENE const& scene)
 	// Set the two textures
 	glActiveTexture(GL_TEXTURE0); opengl_check;
 	glBindTexture(GL_TEXTURE_2D, drawable.texture); opengl_check;
-	opengl_uniform(drawable.shader, "image_texture", 0);  opengl_check;
+	vcl::opengl_uniform(drawable.shader, "image_texture", 0);  opengl_check;
 
 	glActiveTexture(GL_TEXTURE1); opengl_check; // the additional texture 
 	glBindTexture(GL_TEXTURE_2D, drawable.texture_2); opengl_check;
-	opengl_uniform(drawable.shader, "image_texture_2", 1);  opengl_check; // the second texture is called "image_texture_2" in the shader in this case
+	vcl::opengl_uniform(drawable.shader, "image_texture_2", 1);  opengl_check; // the second texture is called "image_texture_2" in the shader in this case
 		
 	// Standard call function
 	assert_vcl(drawable.number_triangles>0, "Try to draw mesh_drawable with 0 triangles"); opengl_check;

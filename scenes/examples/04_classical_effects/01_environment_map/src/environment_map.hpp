@@ -21,7 +21,7 @@ void draw_with_cubemap(vcl::mesh_drawable const& drawable, SCENE const& current_
 		// Set texture as a cubemap (different from the 2D texture using in the "standard" draw call)
 		glActiveTexture(GL_TEXTURE0); opengl_check;
 		glBindTexture(GL_TEXTURE_CUBE_MAP, drawable.texture); opengl_check;
-		opengl_uniform(drawable.shader, "image_texture", 0);  opengl_check;
+		vcl::opengl_uniform(drawable.shader, "image_texture", 0);  opengl_check;
 
 		
 		// Call draw function
