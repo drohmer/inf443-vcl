@@ -17,12 +17,12 @@ GLuint cubemap_texture(std::string const& directory_path)
 	glGenTextures(1, &cubemap);
 	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
 
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA4, left.width, left.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(left.data));
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA4, right.width, right.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(right.data));
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA4, top.width, top.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(top.data));
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA4, bottom.width, bottom.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(bottom.data));
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA4, front.width, front.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(front.data));
-	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA4, back.width, back.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(back.data));
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_X, 0, GL_RGBA8, left.width, left.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(left.data));
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X, 0, GL_RGBA8, right.width, right.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(right.data));
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Y, 0, GL_RGBA8, top.width, top.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(top.data));
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Y, 0, GL_RGBA8, bottom.width, bottom.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(bottom.data));
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_Z, 0, GL_RGBA8, front.width, front.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(front.data));
+	glTexImage2D(GL_TEXTURE_CUBE_MAP_NEGATIVE_Z, 0, GL_RGBA8, back.width, back.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(back.data));
 
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

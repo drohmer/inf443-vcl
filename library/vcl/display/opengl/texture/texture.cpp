@@ -12,10 +12,10 @@ namespace vcl
 
         // Send texture on GPU
         if(im.color_type==image_color_type::rgba){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA4, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(im.data)); opengl_check;
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, im.width, im.height, 0, GL_RGBA, GL_UNSIGNED_BYTE, ptr(im.data)); opengl_check;
         }
         if(im.color_type==image_color_type::rgb){
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB4, im.width, im.height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptr(im.data)); opengl_check;
+            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB8, im.width, im.height, 0, GL_RGB, GL_UNSIGNED_BYTE, ptr(im.data)); opengl_check;
         }
         glGenerateMipmap(GL_TEXTURE_2D); opengl_check;
 
